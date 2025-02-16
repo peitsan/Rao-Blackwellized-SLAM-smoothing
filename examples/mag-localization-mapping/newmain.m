@@ -22,6 +22,16 @@
 %% Load data
 
   clear, close all, clc
+  rosshutdown
+  setenv('ROS_MASTER_URI','http://192.168.1.111:11311/');
+  setenv('ROS_IP','192.168.1.111')  
+  rosinit 
+
+  mag = rossubscriber('/imu/mag', "DataFormat","struct");
+  pause(2)
+
+  mag_data = receive(mag,10);
+  mag.NewMessageFcn = @subsmag_callback;
     
   % Check if data is downloaded
   if isfolder('magnetic-data')==false
@@ -29,11 +39,8 @@
   end
 
   % Data folder cloned from the public GitHub data repository
-  datapath = './magnetic-data';
-  
-  % Sensor (invensense/nexus/trivisio)
-  sensor = 'invensense';
-  
+  % datapath = './magnetic-data';
+
   % Allocate space
   x = [];
   y = [];
@@ -42,39 +49,30 @@
   
   % Loop through
   for i=1:9
-    
-      % Read in files
-      xi = load(fullfile(datapath,'data',sensor, ...
-        sprintf('%i-loc.csv',i)));
-      yi = load(fullfile(datapath,'data',sensor, ...
-        sprintf('%i-mag.csv',i)));
-      ti = load(fullfile(datapath,'data',sensor, ...
-        sprintf('%i-time.csv',i)));
-%将9组轨迹的列向量列方向延长  形成一个循环9圈的超长轨迹
       % Concatenate
       x = [x; xi]; %#ok
       y = [y; yi]; %#ok
       t = [t; ti]; %#ok
-      s = [s; i+0*ti]; %#ok
+      s = [s; i+0*ti]; %#ok loop sort marker 
      
   end
   
-  % Visualize all the separate paths
-  figure(1); clf
-  for i=1:9
-    subplot(3,3,i)
-      ii = (s==i);
-      scatter(x(ii,1),x(ii,2),6,y(ii,1))
-      axis equal 
-  end
-  
-  % Visualize the combined data
-  figure(2); clf; hold on
-  for i=1:3
-      ii = (s==i);
-      scatter(x(ii,1),x(ii,2),6,y(ii,1))
-      axis equal 
-  end
+%   % Visualize all the separate paths
+%   figure(1); clf
+%   for i=1:9
+%     subplot(3,3,i)
+%       ii = (s==i);
+%       scatter(x(ii,1),x(ii,2),6,y(ii,1))
+%       axis equal 
+%   end
+%   
+%   % Visualize the combined data
+%   figure(2); clf; hold on
+%   for i=1:3
+%       ii = (s==i);
+%       scatter(x(ii,1),x(ii,2),6,y(ii,1))
+%       axis equal 
+%   end
   
   data.x = x;
   data.y = y;
@@ -114,7 +112,7 @@
   opt = [false true true true];
   
   % Run GP learning and inference
-  [Eft,dEft,Varft,theta,lik,dVarft] = gp_scalar_potential_fast(x,y,xt,m,LL,theta,opt);
+%   [Eft,dEft,Varft,theta,lik,dVarft] = gp_scalar_potential_fast(x,y,xt,m,LL,theta,opt);
 
 
 %% Set up homography overlay

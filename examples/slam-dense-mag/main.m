@@ -16,6 +16,10 @@
   clear, clc, close all
   rng(1,'twister') % To make things deterministic so we always get the same results
   addpath(genpath('../../.'))
+%  Link to ros sensors topic
+  setenv('ROS_MASTER_URI','http://192.168.1.111:11311/');
+  setenv('ROS_IP','192.168.1.111')  
+  rosinit 
 
   % Default settings
   params = [];
